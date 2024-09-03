@@ -5,11 +5,9 @@ using Microsoft.Extensions.Logging;
 using MortezaeeShop.Data;
 using MortezaeeShop.Models;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace MortezaeeShop.Controllers
 {
@@ -17,9 +15,8 @@ namespace MortezaeeShop.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private MortezaeeShopContext _Context;
-        private static Cart _Cart = new Cart();
 
-        public HomeController(ILogger<HomeController> logger,MortezaeeShopContext context)
+        public HomeController(ILogger<HomeController> logger, MortezaeeShopContext context)
         {
             _logger = logger;
             _Context = context;
@@ -45,7 +42,7 @@ namespace MortezaeeShop.Controllers
             var product = _Context.Products
                 .Include(p => p.Item)
                 .SingleOrDefault(p => p.Id == id);
-            if(product == null)
+            if (product == null)
             {
                 return NotFound();
             }
@@ -68,27 +65,68 @@ namespace MortezaeeShop.Controllers
         public IActionResult AddToCart(int itemId)
         {
             var product = _Context.Products.Include(p => p.Item).SingleOrDefault(p => p.ItemId == itemId);
-            if(product != null)
+            if (product != null)
             {
-                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).ToString());
-                var order = _Context.Order.Where(o => o.UserId == userId && !o.IsFinaly);
+                int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+                var order = _Context.Order.FirstOrDefault(o => o.UserId == userId && !o.IsFinaly);
+                if (order != null)
+                {
+                    var orderDetails = _Context.OrderDetails.FirstOrDefault(d => d.OrderId == order.OrderId &&
+                    d.ProductId == product.Id);
+                    if(orderDetails != null)
+                    {
+                        orderDetails.Count += 1;
+                    }
+                    else
+                    {
+                        _Context.OrderDetails.Add(new OrderDetail()
+                        {
+                            OrderId = order.OrderId,
+                            ProductId = product.Id,
+                            Price = product.Item.Price,
+                            Count = 1
+                        });
+                    }
+                }
+                else
+                {
+                    order = new Order()
+                    {
+                        IsFinaly = false,
+                        CreateTime = DateTime.Now,
+                        UserId = userId
+                    };
+                    _Context.Order.Add(order);
+                    _Context.SaveChanges();
+                    _Context.OrderDetails.Add(new OrderDetail()
+                    {
+                        OrderId = order.OrderId,
+                        ProductId = product.Id,
+                        Price = product.Item.Price,
+                        Count = 1
+                    });
+
+                }
+
+                _Context.SaveChanges();
             }
             return RedirectToAction("ShowCart");
         }
-
+        [Authorize]
         public IActionResult ShowCart()
         {
-            var Cartvm = new CartViewModel()
-            {
-                cartItems = _Cart.CartItems,
-                OrderTotal = _Cart.CartItems.Sum(c => c.GetTotalPrice())
-            };
-            return View(Cartvm);
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier).ToString());
+            var order = _Context.Order.Where(o => o.UserId == userId && !o.IsFinaly)
+                .Include(o => o.OrderDetails)
+                .ThenInclude(o => o.Product).FirstOrDefault();
+            return View(order);
         }
-
-        public IActionResult RemoveCart(int itemId)
+        [Authorize]
+        public IActionResult RemoveCart(int DetailId)
         {
-            _Cart.removeItem(itemId);
+            var orderDetails = _Context.OrderDetails.Find(DetailId);
+            _Context.Remove(orderDetails);
+            _Context.SaveChanges();
             return RedirectToAction("ShowCart");
         }
 
