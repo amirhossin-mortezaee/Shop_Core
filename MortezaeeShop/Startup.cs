@@ -28,6 +28,7 @@ namespace MortezaeeShop
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddRazorPages();
 
             #region Db Context
             services.AddDbContext<MortezaeeShopContext>(options => {
@@ -75,6 +76,7 @@ namespace MortezaeeShop
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapRazorPages();
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
