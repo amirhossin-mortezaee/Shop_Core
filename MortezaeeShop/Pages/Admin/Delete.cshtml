@@ -1,0 +1,36 @@
+﻿@page
+@model MortezaeeShop.Pages.Admin.DeleteModel
+@{
+    ViewData["Title"] = "حذف کالا";
+}
+<h1>حذف کالا</h1>
+<hr />
+<form method="post">
+    <dl class="dl-horizontal">
+        <dd>
+            <label asp-for="Product.Name"></label>
+        </dd>
+        <dt>
+            <input asp-for="Product.Name" class="form-control" readonly />
+            <span asp-validation-for="Product.Name"></span>
+        </dt>
+        <dd>
+            <label asp-for="Product.Discription"></label>
+        </dd>
+        <dt>
+            <textarea asp-for="Product.Discription" class="form-control" readonly></textarea>
+            <span asp-validation-for="Product.Discription"></span>
+        </dt>
+        <dd>
+            <label>تصویر</label>
+        </dd>
+        <dt>
+            <img src="~/images/@(Model.Product.Id).Jpg" style="max-width : 200px;" />
+        </dt>
+        <dd></dd>
+        <dt>
+            <input type="hidden" asp-for="Product.Id" />
+            <input type="submit" value="حذف" class="btn btn-danger" />
+        </dt>
+    </dl>
+</form>
