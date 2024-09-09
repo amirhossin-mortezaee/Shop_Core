@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -12,11 +13,13 @@ namespace MortezaeeShop.Models
         [MaxLength(300)]
         [EmailAddress]
         [Display(Name = "ایمیل")]
+        [Remote("VerifyEmail", "Account")]
         public string Email { get; set; }
         [Required(ErrorMessage = "لطفا {0} را وارد نمایید")]
         [MaxLength(50)]
         [DataType(DataType.Password)]
         [Display(Name = "کلمه عبور")]
+        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$", ErrorMessage = "کلمه عبور باید شامل حرف و عدد باشد")]
         public string Password { get; set; }
         [Required(ErrorMessage = "لطفا {0} را وارد نمایید")]
         [MaxLength(50)]

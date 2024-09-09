@@ -31,12 +31,6 @@ namespace MortezaeeShop.Controllers
                 return View(register);
             }
 
-            if (_userRepository.IsExistUserByEmail(register.Email.ToLower()))
-            {
-                ModelState.AddModelError("Email", "ایمیل وارد شده قبلا ثبت نام کرده است");
-                return View(register);
-            }
-
             Users users = new Users()
             {
                 Email = register.Email.ToLower(),
@@ -49,7 +43,15 @@ namespace MortezaeeShop.Controllers
             return View("SuccessRegister", register);
         }
         #endregion
+        public IActionResult VerifyEmail(string email)
+        {
+            if (_userRepository.IsExistUserByEmail(email.ToLower()))
+            {
+                return Json($"ایمیل {email} وارد شده تکرار می باشد");
+            }
 
+            return Json(true);
+        }
         #region Login
         public IActionResult Login()
         {
