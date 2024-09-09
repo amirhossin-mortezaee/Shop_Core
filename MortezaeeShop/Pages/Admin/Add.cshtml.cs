@@ -20,9 +20,15 @@ namespace MortezaeeShop.Pages.Admin
         }
 
         [BindProperty]
-        public AddEditProductViewModel Product { get; set; }
+        public AddEditProductViewModel product { get; set; }
+        [BindProperty]
+        public List<int> selectedGroups { get; set; }
         public void OnGet()
         {
+            product = new AddEditProductViewModel()
+            {
+                Categories = _context.Categorys.ToList(),
+            };
         }
 
         public IActionResult OnPost()
@@ -32,17 +38,17 @@ namespace MortezaeeShop.Pages.Admin
 
             var item = new Item()
             {
-                Price = Product.Price,
-                QuantityInStock = Product.QuantityInStock
+                Price = product.Price,
+                QuantityInStock = product.QuantityInStock
             };
             _context.Add(item);
             _context.SaveChanges();
 
             var pro = new Product()
             {
-                Name = Product.Name,
+                Name = product.Name,
                 Item = item,
-                Discription = Product.Description
+                Discription = product.Description
             };
             _context.Add(pro);
             _context.SaveChanges();
@@ -50,15 +56,28 @@ namespace MortezaeeShop.Pages.Admin
             pro.ItemId = pro.Id;
             _context.SaveChanges();
 
-            if(Product.Picture?.Length > 0)
+            if(product.Picture?.Length > 0)
             {
                 string FilePath = Path.Combine(Directory.GetCurrentDirectory(),
                     "wwwroot",
                     "images",
-                    pro.Id + Path.GetExtension(Product.Picture.FileName));
+                    pro.Id + Path.GetExtension(product.Picture.FileName));
                 using (var stream = new FileStream(FilePath,FileMode.Create))
                 {
-                    Product.Picture.CopyTo(stream);
+                    product.Picture.CopyTo(stream);
+                }
+            }
+
+            if(selectedGroups.Any() && selectedGroups.Count() > 0)
+            {
+                foreach (int gr in selectedGroups)
+                {
+                    _context.categoryToProducts.Add(new CategoryToProduct()
+                    {
+                        CategoryId = gr,
+                        ProductId = pro.Id
+                    });
+                    _context.SaveChanges();
                 }
             }
             return RedirectToPage("Index");

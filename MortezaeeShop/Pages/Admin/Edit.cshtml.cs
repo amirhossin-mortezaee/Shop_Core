@@ -21,6 +21,9 @@ namespace MortezaeeShop.Pages.Admin
         }
         [BindProperty]
         public AddEditProductViewModel Product { get; set; }
+        [BindProperty]
+        public List<int> selectedGroups { get; set; }
+        public List<int> GroupsProduct { get; set; }
         public void OnGet(int id)
         {
             Product = _context.Products.Include(x => x.Item)
@@ -33,6 +36,10 @@ namespace MortezaeeShop.Pages.Admin
                     QuantityInStock = s.Item.QuantityInStock,
                     Price = s.Item.Price
                 }).FirstOrDefault();
+
+            Product.Categories = _context.Categorys.ToList();
+            GroupsProduct = _context.categoryToProducts.Where(x => x.ProductId == Product.Id)
+                .Select(x => x.CategoryId).ToList();
         }
 
 
@@ -59,6 +66,20 @@ namespace MortezaeeShop.Pages.Admin
                 using (var stream = new FileStream(FilePath, FileMode.Create))
                 {
                     Product.Picture.CopyTo(stream);
+                }
+            }
+            _context.categoryToProducts.Where(c => c.ProductId == product.Id).ToList()
+                .ForEach(g => _context.categoryToProducts.Remove(g));
+            if (selectedGroups.Any() && selectedGroups.Count() > 0)
+            {
+                foreach (int gr in selectedGroups)
+                {
+                    _context.categoryToProducts.Add(new CategoryToProduct()
+                    {
+                        CategoryId = gr,
+                        ProductId = product.Id
+                    });
+                    _context.SaveChanges();
                 }
             }
 

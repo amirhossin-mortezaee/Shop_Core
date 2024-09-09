@@ -14,5 +14,6 @@ namespace MortezaeeShop.Models
         public Decimal Price { get; set; }
         public int QuantityInStock { get; set; }
         public IFormFile Picture { get; set; }
+        public List<Category> Categories { get; set; }
     }
 }

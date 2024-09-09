@@ -43,6 +43,15 @@
             <input asp-for="Product.Picture" />
             <span asp-validation-for="Product.Picture"></span>
         </dt>
+        <dd>گروه</dd>
+        <dt>
+            @foreach (var item in Model.Product.Categories)
+            {
+                <p>
+                    <input type="checkbox" name="selectedGroups" value="@item.Id" @((Model.GroupsProduct.Any(c =>c == item.Id)? "checked" : ""))/>@item.Name
+                </p>
+            }
+        </dt>
         <dd></dd>
         <dt>
             <input type="submit" value="ثبت" class="btn btn-success" />
